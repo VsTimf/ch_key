@@ -23,7 +23,7 @@ static mailbox_t key_driver_mailbox;
 event_source_t key_events;
 
 
-// Debounce callback 
+// Debounce callback
 static void key_debounce_cb(virtual_timer_t *vtp, void *p);
 
 
@@ -57,7 +57,7 @@ static void key_debounce_cb(virtual_timer_t *vtp, void *p) {
     {
         key->pad_last_state = pad_new_state;
         chMBPostI(&key_driver_mailbox, (msg_t)key);
-    }  
+    }
 }
 
 
@@ -101,7 +101,7 @@ static THD_FUNCTION(keyDisp, arg) {
             // Rise "HOLD EVENT"
             #if (KEY_HOLD_EVENT_EN == TRUE)
             chSysLock();
-            chEvtBroadcastFlags(&key_events, KE2MSG(key->id, KEY_EVENT_HOLD));
+            chEvtBroadcastFlags(&key_events, KEY2MSG(key->id, KEY_EVENT_HOLD));
             chSysUnlock();
             #endif
 
@@ -116,7 +116,7 @@ static THD_FUNCTION(keyDisp, arg) {
             // Rise "HOLD REPEAT EVENT"
             #if (KEY_HOLD_REPEAT_EVENT_EN == TRUE)
             chSysLock();
-            chEvtBroadcastFlags(&key_events,  KE2MSG(key->id, KEY_EVENT_HOLD_REPEAT));
+            chEvtBroadcastFlags(&key_events,  KEY2MSG(key->id, KEY_EVENT_HOLD_REPEAT));
             chSysUnlock();
             #endif
 
@@ -139,7 +139,7 @@ static THD_FUNCTION(keyDisp, arg) {
             // Rise "CLICK EVENT"
             #if (KEY_CLICK_EVENT_EN == TRUE)
             chSysLock();
-            chEvtBroadcastFlags(&key_events, KE2MSG(key->id, KEY_EVENT_CLICK));
+            chEvtBroadcastFlags(&key_events, KEY2MSG(key->id, KEY_EVENT_CLICK));
             chSysUnlock();
             #endif
           }
@@ -148,7 +148,7 @@ static THD_FUNCTION(keyDisp, arg) {
             // Rise "IDLE AFTER RST EVENT"
             #if (KEY_HOLD_ON_PWR_UP_EVENT_EN == TRUE)
             chSysLock();
-            chEvtBroadcastFlags(&key_events, KE2MSG(key->id, KEY_EVENT_HOLD_ON_PWR_UP));
+            chEvtBroadcastFlags(&key_events, KEY2MSG(key->id, KEY_EVENT_HOLD_ON_PWR_UP));
             chSysUnlock();
             #endif
           }
@@ -167,7 +167,7 @@ static THD_FUNCTION(keyDisp, arg) {
           chVTReset(&key->hold_vt);
                     
           #if (KEY_RELEASE_EVENT_EN == TRUE)
-          chEvtBroadcastFlags(&key_events, KE2MSG(key->id, KEY_EVENT_RELEASE));  // Rise "BACK TO IDLE EVENT"
+          chEvtBroadcastFlags(&key_events, KEY2MSG(key->id, KEY_EVENT_RELEASE));  // Rise "BACK TO IDLE EVENT"
           chSysUnlock();
           #endif
         }
@@ -192,6 +192,11 @@ void ch_key_init()
 {
     for(unsigned idx = 0; idx < KEY_QNT; idx++)
     {
+      if(key[idx].pull_resistor_en)
+        (key[idx].active_level == KEY_ACTIVE_LOW) ? palSetPadMode(key[idx].port, key[idx].pad, PAL_MODE_INPUT_PULLUP) : palSetPadMode(key[idx].port, key[idx].pad, PAL_MODE_INPUT_PULLDOWN);
+      else
+        palSetPadMode(key[idx].port, key[idx].pad, PAL_MODE_INPUT);
+
       palEnablePadEvent(key[idx].port, key[idx].pad, PAL_EVENT_MODE_BOTH_EDGES);
       palSetPadCallback(key[idx].port, key[idx].pad, key_isr_cb, (void*)(&key[idx]));
 

@@ -11,9 +11,10 @@ extern "C" {
 #include "ch_key_config.h"
 
 #define REGK(KEY)           (1 << (KEY + 16))
-#define KE2MSG(KEY, EVT)    ((eventflags_t)(EVT | REGK(KEY)))
+#define REGKEYEVTS(EVTS)    (EVTS)
+#define KEY2MSG(KEY, EVT)   ((eventflags_t)(EVT | REGK(KEY)))
 #define ISKEY(KEY, MSG)     (REGK(KEY) & MSG)
-#define ISEVT(EVT, MSG)     (EVT & MSG)
+#define ISKEYEVT(EVT, MSG)  (EVT & MSG)
 
 
 typedef enum
@@ -21,6 +22,13 @@ typedef enum
     KEY_ACTIVE_LOW = 0,
     KEY_ACTIVE_HIGH = 1
 } TKeyActiveLvl;
+
+
+enum KeyPullResistor
+{
+    PULL_DISABLE = 0,
+    PULL_ENABLE = 1
+};
 
 
 typedef enum 
@@ -48,6 +56,7 @@ typedef struct{
     const TKeyActiveLvl active_level;
     const ioportid_t port;
     const iopadid_t pad;
+    const uint8_t pull_resistor_en;
 
     volatile uint8_t pad_last_state;
 
