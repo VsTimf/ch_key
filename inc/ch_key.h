@@ -47,7 +47,7 @@ enum KeyEvent
     KEY_EVENT_HOLD_ON_PWR_UP = 16384,
     KEY_EVENT_RELEASE        = 32768
 
-    // Up to 16 events 
+    /* Up to 16 events */
 };
 
 
@@ -70,11 +70,11 @@ typedef struct{
 
 
 
-// Global Event Source
+/* Global Event Source */
 extern event_source_t key_events;
 
 
-void ch_key_init();
+void ch_key_init(void);
 
 
 #ifdef __cplusplus
@@ -82,4 +82,4 @@ void ch_key_init();
 #endif
 
 
-#endif // _CH_KEY_H
+#endif /* _CH_KEY_H */

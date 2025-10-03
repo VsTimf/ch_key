@@ -7,27 +7,27 @@
 #include "ch_key.h"
 
 
-// Key structures
+/* Key structures */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 TKey key[KEY_QNT] = {KEY_LIST};
 #pragma GCC diagnostic pop
 
 
-// Mailbox for internal driver events
+/* Mailbox for internal driver events */
 static msg_t key_driver_mailbox_buf[KEY_QNT];
 static mailbox_t key_driver_mailbox;
 
 
-// Global Event Source
+/* Global Event Source */
 event_source_t key_events;
 
 
-// Debounce callback
+/* Debounce callback */
 static void key_debounce_cb(virtual_timer_t *vtp, void *p);
 
 
-// Key edge isr
+/* Key edge isr */
 static void key_isr_cb(void *arg) {
     TKey* key = (TKey*)arg;
 
@@ -40,7 +40,7 @@ static void key_isr_cb(void *arg) {
 }
 
 
-// Debounce timeout isr
+/* Debounce timeout isr */
 static void key_debounce_cb(virtual_timer_t *vtp, void *p) {
     (void)vtp;
     TKey* key = (TKey*)p;
@@ -62,7 +62,7 @@ static void key_debounce_cb(virtual_timer_t *vtp, void *p) {
 
 
 
-// Key timeout isr
+/* Key timeout isr */
 static void key_hold_cb(virtual_timer_t *vtp, void *key) {
     (void)(vtp);
     ((TKey*)key)->timeout = 1;
@@ -71,8 +71,8 @@ static void key_hold_cb(virtual_timer_t *vtp, void *key) {
 
 
 
-// Thread - KEY dispatcher
-static THD_WORKING_AREA(waKeyDisp, 128);
+/* Thread - KEY dispatcher */
+static THD_WORKING_AREA(waKeyDisp, KEY_THREAD_STACK_SIZE);
 static THD_FUNCTION(keyDisp, arg) {
   (void)(arg);
   msg_t msg;
@@ -98,7 +98,7 @@ static THD_FUNCTION(keyDisp, arg) {
             chVTReset(&key->hold_vt);
             chVTDoSetI(&key->hold_vt, TIME_MS2I(KEY_HOLD_REPEAT_EVENT_MS), key_hold_cb, key);
 
-            // Rise "HOLD EVENT"
+            /* Rise "HOLD EVENT" */
             #if (KEY_HOLD_EVENT_EN == TRUE)
             chSysLock();
             chEvtBroadcastFlags(&key_events, KEY2MSG(key->id, KEY_EVENT_HOLD));
@@ -113,7 +113,7 @@ static THD_FUNCTION(keyDisp, arg) {
             chVTReset(&key->hold_vt);
             chVTDoSetI(&key->hold_vt, TIME_MS2I(KEY_HOLD_REPEAT_EVENT_MS), key_hold_cb, key);
 
-            // Rise "HOLD REPEAT EVENT"
+            /* Rise "HOLD REPEAT EVENT" */
             #if (KEY_HOLD_REPEAT_EVENT_EN == TRUE)
             chSysLock();
             chEvtBroadcastFlags(&key_events,  KEY2MSG(key->id, KEY_EVENT_HOLD_REPEAT));
@@ -136,7 +136,7 @@ static THD_FUNCTION(keyDisp, arg) {
             chVTReset(&key->hold_vt);
             chVTDoSetI(&key->hold_vt, TIME_MS2I(KEY_HOLD_EVENT_MS), key_hold_cb, key);
 
-            // Rise "CLICK EVENT"
+            /* Rise "CLICK EVENT" */
             #if (KEY_CLICK_EVENT_EN == TRUE)
             chSysLock();
             chEvtBroadcastFlags(&key_events, KEY2MSG(key->id, KEY_EVENT_CLICK));
@@ -145,7 +145,7 @@ static THD_FUNCTION(keyDisp, arg) {
           }
 
           else{
-            // Rise "IDLE AFTER RST EVENT"
+            /* Rise "IDLE AFTER RST EVENT" */
             #if (KEY_HOLD_ON_PWR_UP_EVENT_EN == TRUE)
             chSysLock();
             chEvtBroadcastFlags(&key_events, KEY2MSG(key->id, KEY_EVENT_HOLD_ON_PWR_UP));
@@ -167,7 +167,7 @@ static THD_FUNCTION(keyDisp, arg) {
           chVTReset(&key->hold_vt);
                     
           #if (KEY_RELEASE_EVENT_EN == TRUE)
-          chEvtBroadcastFlags(&key_events, KEY2MSG(key->id, KEY_EVENT_RELEASE));  // Rise "BACK TO IDLE EVENT"
+          chEvtBroadcastFlags(&key_events, KEY2MSG(key->id, KEY_EVENT_RELEASE));  /* Rise "BACK TO IDLE EVENT" */
           chSysUnlock();
           #endif
         }
@@ -188,7 +188,7 @@ static THD_FUNCTION(keyDisp, arg) {
 /**
  * @brief Initialize key driver structures and syncronization objects. Creates KEY Handler Thread
 */
-void ch_key_init()
+void ch_key_init(void)
 {
     for(unsigned idx = 0; idx < KEY_QNT; idx++)
     {

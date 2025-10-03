@@ -1,5 +1,5 @@
 #ifndef _CH_KEY_CONFIG_H
-#define CH_KEY_CONFIG_H
+#define _CH_KEY_CONFIG_H
 
 /* This is simple Key handler library based on ChibiOs HAL for STM32 */
 
@@ -23,12 +23,12 @@ enum KEYS {
     KEY_SEL,
     KEY_UP,
 
-    KEY_QNT             // Do not change!
+    KEY_QNT             /* Do not change! */
 };
 
 
 
-/* 4. Define "PORT", "PIN", "ACTIVE LEVEL" and PULL RESISTOR of keys in p.2 enumeration order. 
+/* 4. Define "PORT", "PIN", "ACTIVE LEVEL" and PULL RESISTOR of keys in p.3 enumeration order. 
  *    !  Library based on Chibi "palEnablePadEvent", so using pins with the same number (aka GPIOA5 and GPIOB5) is NOT allowed 
  *    !  There is no need to initialize the pins manually as they are automatically initialized when the function "ch_key_init()" is called. 
  *    !  The Pull-Up or Pull-Down selection is made automatically based on "ACTIVE LEVEL". */
@@ -43,11 +43,13 @@ enum KEYS {
 
 /* 7. In every thread you need to handle keys:
  * 
- * 7.1 Registy event flag mask: chEvtRegisterMaskWithFlags(&key_events, &el, 0x01, REGK(KEY_SEL) | REGK(KEY_UP) | REGKEYEVTS(KEY_EVENT_CLICK | KEY_EVENT_HOLD));
+ * 7.1 Registy event flag mask: chEvtRegisterMaskWithFlags(&key_events, &key_el, 0x01, REGK(KEY_SEL) | REGK(KEY_UP) | REGKEYEVTS(KEY_EVENT_CLICK | KEY_EVENT_HOLD));
  * 7.2 Wait for events: eventmask_t events = chEvtWaitAny(ALL_EVENTS); or if(chEvtWaitAnyTimeout(ALL_EVENTS, TIME_IMMEDIATE)) or ...
  * 7.3 Get event flags: msg = chEvtGetAndClearFlags(&el);
  * 7.4 Check key: if (ISKEY(KEY_SEL, msg)) ...
- * 7.5 Check event: if(ISKEYEVT(KEY_EVENT_CLICK, msg)) ...
- */
+ * 7.5 Check event: if(ISKEYEVT(KEY_EVENT_CLICK, msg)) ... */
 
- #endif // CH_KEY_CONFIG_H
+/* 8. Optionally, you can change key dispather stack size */
+#define KEY_THREAD_STACK_SIZE 256
+
+#endif /* _CH_KEY_CONFIG_H */
