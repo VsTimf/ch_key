@@ -36,20 +36,28 @@ enum KEYS {
                     {KEY_UP,  KEY_ACTIVE_LOW, GPIOB, 13, PULL_ENABLE}
 
 
-/* 5. Define priority of KEY handler Thread*/
+/* 5. Define priority of KEY handler Thread and Event mask*/
 #define KEY_HADLER_THREAD_PRIORITY (NORMALPRIO + 1)
+#define KEY_EVENT_MASK 0x01
 
 /* 6. Call ch_key_init() once before use driver */
 
 /* 7. In every thread you need to handle keys:
- * 
- * 7.1 Registy event flag mask: chEvtRegisterMaskWithFlags(&key_events, &key_el, 0x01, REGK(KEY_SEL) | REGK(KEY_UP) | REGKEYEVTS(KEY_EVENT_CLICK | KEY_EVENT_HOLD));
- * 7.2 Wait for events: eventmask_t events = chEvtWaitAny(ALL_EVENTS); or if(chEvtWaitAnyTimeout(ALL_EVENTS, TIME_IMMEDIATE)) or ...
- * 7.3 Get event flags: msg = chEvtGetAndClearFlags(&el);
- * 7.4 Check key: if (ISKEY(KEY_SEL, msg)) ...
- * 7.5 Check event: if(ISKEYEVT(KEY_EVENT_CLICK, msg)) ... */
+ * event_listener_t key_el;
+ * eventflags_t msg;
+ * eventmask_t events;
+ * chEvtRegisterMaskWithFlags(&key_events, &key_el, KEY_EVENT_MASK, REGK(KEY_SEL) | REGK(KEY_UP) | REGKEYEVTS(KEY_EVENT_CLICK | KEY_EVENT_HOLD));  // Registy event flag mask
+ * events = chEvtWaitAny(ALL_EVENTS);                                                                                        // Wait for events or..
+ * //events =  if(chEvtWaitAnyTimeout(ALL_EVENTS, TIME_MS2I(500)));                                                          // Wait for events with timeout
+ * if(events & KEY_EVENT_MASK)
+ * {
+ *  msg = chEvtGetAndClearFlags(&key_el);                                                       // Get event flags
+ *  if (ISKEY(KEY_SEL, msg)){...}                                                               // Check key
+ *  if(ISKEYEVT(KEY_EVENT_CLICK, msg)) {...}                                                    // Check event
+ * }
+ */
 
 /* 8. Optionally, you can change key dispather stack size */
-#define KEY_THREAD_STACK_SIZE 256
+#define KEY_THREAD_STACK_SIZE 512
 
 #endif /* _CH_KEY_CONFIG_H */
